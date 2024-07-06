@@ -1,0 +1,4 @@
+﻿  imgui.cpp
+  imgui_draw.cpp
+  imgui_widgets.cpp
+  imgui.vcxproj -> C:\Users\daniel-legion7i\source\repos\rtc\dolphin-Vanguard\Build\x64\Debug\imgui\bin\imgui.lib
