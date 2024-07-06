@@ -33,7 +33,6 @@
 
 #include "UICommon/CommandLineParse.h"
 #include "UICommon/UICommon.h"
-#include "NarrysMod/VanguardClientInitializer.h"
 
 
 static bool QtMsgAlertHandler(const char* caption, const char* text, bool yes_no, Common::MsgType style)
@@ -217,8 +216,20 @@ int main(int argc, char* argv[])
     MainWindow win{std::move(boot), static_cast<const char*>(options.get("movie"))};
     if (options.is_set("debugger"))
       Settings::Instance().SetDebugModeEnabled(true);
-    // NARRYSMOD_HIJACK
-    VanguardClientInitializer::Initialize();
+    // RTC_Hijack: include the hook dll as an import
+    HINSTANCE vanguard = LoadLibraryA("DolphinVanguard-Hook.dll");
+    if (!vanguard)
+    {
+      DWORD error = GetLastError();
+    }
+    typedef void (*InitVanguard)();
+
+    InitVanguard StartVanguard = (InitVanguard)GetProcAddress(vanguard, "InitVanguard");
+    if (!StartVanguard)
+    {
+      DWORD error = GetLastError();
+    }
+    StartVanguard();
     win.Show();
 
 

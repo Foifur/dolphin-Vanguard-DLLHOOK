@@ -47,12 +47,14 @@
     <ClCompile>
       <AdditionalOptions>/experimental:newLambdaProcessor %(AdditionalOptions)</AdditionalOptions>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <TreatWarningAsError>false</TreatWarningAsError>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <AdditionalOptions>/experimental:newLambdaProcessor %(AdditionalOptions)</AdditionalOptions>
+      <TreatWarningAsError>false</TreatWarningAsError>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>

@@ -83,7 +83,6 @@
 #include "VideoCommon/RenderBase.h"
 #include "VideoCommon/VideoBackendBase.h"
 #include "VideoCommon/VideoConfig.h"
-#include "DolphinQt/NarrysMod/VanguardClient.h"
 #include "DolphinQt/NarrysMod/ThreadLocalHelper.h"
 
 namespace Core
@@ -345,7 +344,21 @@ static void CpuThread(const std::optional<std::string>& savestate_path, bool del
     if (delete_savestate)
       File::Delete(*savestate_path);
   }
-  VanguardClientUnmanaged::LOAD_GAME_DONE();
+
+  // RTC_Hijack: include the hook dll as an import
+  HINSTANCE vanguard = LoadLibraryA("DolphinVanguard-Hook.dll");
+  if (!vanguard)
+  {
+    DWORD error = GetLastError();
+  }
+  typedef void (*LOADGAMEDONE)();
+  LOADGAMEDONE LoadGameDone = (LOADGAMEDONE)GetProcAddress(vanguard, "LOADGAMEDONE");
+  if (!LoadGameDone)
+  {
+    DWORD error = GetLastError();
+  }
+  LoadGameDone();
+
   s_is_started = true;
   CPUSetInitialExecutionState();
 
@@ -373,7 +386,11 @@ static void CpuThread(const std::optional<std::string>& savestate_path, bool del
   s_memory_watcher.reset();
 #endif
 
-  VanguardClientUnmanaged::GAME_CLOSED();
+  // RTC_Hijack: include the hook dll as an import
+  typedef void (*GAMECLOSED)();
+  GAMECLOSED CloseGame = (GAMECLOSED)GetProcAddress(vanguard, "GAMECLOSED");
+  CloseGame();
+
   s_is_started = false;
 
   if (_CoreParameter.bFastmem)
@@ -443,7 +460,19 @@ static void EmuThread(std::unique_ptr<BootParameters> boot, WindowSystemInfo wsi
   if (std::holds_alternative<BootParameters::Disc>(boot->parameters))
     romPath = std::get<BootParameters::Disc>(boot->parameters).path;
 
-  VanguardClientUnmanaged::LOAD_GAME_START(romPath);
+  // RTC_Hijack: include the hook dll as an import
+  HINSTANCE vanguard = LoadLibraryA("DolphinVanguard-Hook.dll");
+  if (!vanguard)
+  {
+    DWORD error = GetLastError();
+  }
+  typedef void (*LOADGAMESTART)(std::string);
+  LOADGAMESTART LoadGameStart = (LOADGAMESTART)GetProcAddress(vanguard, "LOADGAMESTART");
+  if (!LoadGameStart)
+  {
+    DWORD error = GetLastError();
+  }
+  LoadGameStart(romPath);
 
   // For a time this acts as the CPU thread...
   DeclareAsCPUThread();
@@ -980,7 +1009,11 @@ void UpdateTitle()
 void Shutdown()
 {
   //Let the RTC shut down anything it needs to shut down gracefully
-  VanguardClientUnmanaged::EMULATOR_CLOSING();
+  //   RTC_Hijack: include the hook dll as an import
+  HINSTANCE vanguard = LoadLibraryA("DolphinVanguard-Hook.dll");
+  typedef void (*EMULATORCLOSING)();
+  EMULATORCLOSING EmulatorClosing = (EMULATORCLOSING)GetProcAddress(vanguard, "EMULATORCLOSING");
+  EmulatorClosing();
 
   // During shutdown DXGI expects us to handle some messages on the UI thread.
   // Therefore we can't immediately block and wait for the emu thread to shut
