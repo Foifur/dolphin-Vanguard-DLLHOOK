@@ -17,7 +17,6 @@
 
 #include "Core/ConfigManager.h"
 
-#include "DolphinQt/NarrysMod/VanguardClient.h"
 #include "VideoCommon/OnScreenDisplay.h"
 
 namespace OSD
@@ -81,9 +80,14 @@ static float DrawMessage(int index, const Message& msg, const ImVec2& position, 
   return window_height;
 }
 
+// RTC_Hijack: include the hook dll as an import
+HINSTANCE vanguard = LoadLibraryA("DolphinVanguard-Hook.dll");
+typedef bool (*RTCOSDENABLED)();
+RTCOSDENABLED RTC_OSD_Enabled = (RTCOSDENABLED)GetProcAddress(vanguard, "RTCOSDENABLED");
+
 void AddTypedMessage(MessageType type, std::string message, u32 ms, u32 rgba)
 {
-    if (!VanguardClientUnmanaged::RTC_OSD_ENABLED())
+  if (!RTC_OSD_Enabled())
         return;
   std::lock_guard<std::mutex> lock(s_messages_mutex);
   s_messages.erase(type);
@@ -92,7 +96,7 @@ void AddTypedMessage(MessageType type, std::string message, u32 ms, u32 rgba)
 
 void AddMessage(std::string message, u32 ms, u32 rgba)
 {
-    if (!VanguardClientUnmanaged::RTC_OSD_ENABLED())
+  if (!RTC_OSD_Enabled())
         return;
   std::lock_guard<std::mutex> lock(s_messages_mutex);
   s_messages.emplace(MessageType::Typeless,

@@ -115,8 +115,6 @@
 #include "VideoCommon/NetPlayChatUI.h"
 #include "VideoCommon/VideoConfig.h"
 
-#include "NarrysMod/VanguardClientInitializer.h"
-#include "NarrysMod/VanguardClient.h"
 
 #if defined(HAVE_XRANDR) && HAVE_XRANDR
 #include "UICommon/X11Utils.h"
@@ -215,7 +213,6 @@ MainWindow::MainWindow(std::unique_ptr<BootParameters> boot_parameters,
   ConnectStack();
   ConnectMenuBar();
   ConnectHotkeys();
-  VanguardClientInitializer::win = this;
 
   InitCoreCallbacks();
 
@@ -937,10 +934,15 @@ void MainWindow::ScanForSecondDiscAndStartGame(const UICommon::GameFile& game,
   StartGame(paths, savestate_path);
 }
 
+// RTC_Hijack: include the hook dll as an import
+HINSTANCE vanguard = LoadLibraryA("DolphinVanguard-Hook.dll");
+typedef void (*GAMETOLOAD)(std::string);
+GAMETOLOAD GameToLoad = (GAMETOLOAD)GetProcAddress(vanguard, "GAMETOLOAD");
+
 void MainWindow::StartGame(const QString& path, ScanForSecondDisc scan,
                            const std::optional<std::string>& savestate_path)
 {
-  VanguardClientUnmanaged::GAME_TO_LOAD = path.toStdString();
+  GameToLoad(path.toStdString());
   StartGame(path.toStdString(), scan, savestate_path);
 }
 
@@ -956,19 +958,19 @@ void MainWindow::StartGame(const std::string& path, ScanForSecondDisc scan,
       return;
     }
   }
-  VanguardClientUnmanaged::GAME_TO_LOAD = path;
+  GameToLoad(path);
   StartGame(BootParameters::GenerateFromFile(path, savestate_path));
 }
 void MainWindow::StartGame(const std::string& path)
 {
-  VanguardClientUnmanaged::GAME_TO_LOAD = path;
+  GameToLoad(path);
   StartGame(BootParameters::GenerateFromFile(path));
 }
 
 void MainWindow::StartGame(const std::vector<std::string>& paths,
                            const std::optional<std::string>& savestate_path)
 {
-  VanguardClientUnmanaged::GAME_TO_LOAD = paths[0];
+  GameToLoad(paths[0]);
   StartGame(BootParameters::GenerateFromFile(paths, savestate_path));
 }
 
