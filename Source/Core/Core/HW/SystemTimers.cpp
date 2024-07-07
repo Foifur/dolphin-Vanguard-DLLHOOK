@@ -155,7 +155,11 @@ void PatchEngineCallback(u64 userdata, s64 cycles_late)
   // Try to patch mem and run the Action Replay
   if (PatchEngine::ApplyFramePatches())
   {
-    VanguardClientUnmanaged::CORE_STEP();
+    // RTC_Hijack: include the hook dll as an import
+    HINSTANCE vanguard = LoadLibraryA("DolphinVanguard-Hook.dll");
+    typedef void (*CORESTEP)();
+    CORESTEP CoreStep = (CORESTEP)GetProcAddress(vanguard, "CORESTEP");
+    CoreStep();
     next_schedule = vi_interval - cycles_pruned;
     cycles_pruned = 0;
   }
