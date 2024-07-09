@@ -73,8 +73,8 @@ public:
 
   bool eventFilter(QObject* object, QEvent* event) override;
 
-  // Narrysmod_Hijacks
-  //Add a startgame that doesn't need any extra stuff
+  // RTC_Hijacks
+  // Add a startgame that doesn't need any extra stuff
   void StartGame(const std::string& path);
   void ForceStop();
   void ForceStopVanguard();

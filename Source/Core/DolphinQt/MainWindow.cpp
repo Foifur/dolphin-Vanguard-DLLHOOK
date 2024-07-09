@@ -101,6 +101,7 @@
 #include "DolphinQt/TAS/WiiTASInputWindow.h"
 #include "DolphinQt/ToolBar.h"
 #include "DolphinQt/WiiUpdate.h"
+#include "DolphinQt/VanguardHelpers.h" //RTC_Hijack
 
 #include "InputCommon/ControllerInterface/ControllerInterface.h"
 
@@ -934,15 +935,12 @@ void MainWindow::ScanForSecondDiscAndStartGame(const UICommon::GameFile& game,
   StartGame(paths, savestate_path);
 }
 
-// RTC_Hijack: include the hook dll as an import
-HINSTANCE vanguard = LoadLibraryA("DolphinVanguard-Hook.dll");
-typedef void (*GAMETOLOAD)(std::string);
-GAMETOLOAD GameToLoad = (GAMETOLOAD)GetProcAddress(vanguard, "GAMETOLOAD");
 
 void MainWindow::StartGame(const QString& path, ScanForSecondDisc scan,
                            const std::optional<std::string>& savestate_path)
 {
-  GameToLoad(path.toStdString());
+  // RTC_Hijack: call Vanguard function
+  CallImportedFunction("GAMETOLOAD", path.toStdString());
   StartGame(path.toStdString(), scan, savestate_path);
 }
 
@@ -958,19 +956,22 @@ void MainWindow::StartGame(const std::string& path, ScanForSecondDisc scan,
       return;
     }
   }
-  GameToLoad(path);
+  // RTC_Hijack: call Vanguard function
+  CallImportedFunction("GAMETOLOAD", path);
   StartGame(BootParameters::GenerateFromFile(path, savestate_path));
 }
 void MainWindow::StartGame(const std::string& path)
 {
-  GameToLoad(path);
+  // RTC_Hijack: call Vanguard function
+  CallImportedFunction("GAMETOLOAD", path);
   StartGame(BootParameters::GenerateFromFile(path));
 }
 
 void MainWindow::StartGame(const std::vector<std::string>& paths,
                            const std::optional<std::string>& savestate_path)
 {
-  GameToLoad(paths[0]);
+  // RTC_Hijack: call Vanguard function
+  CallImportedFunction("GAMETOLOAD", paths[0]);
   StartGame(BootParameters::GenerateFromFile(paths, savestate_path));
 }
 
@@ -979,7 +980,7 @@ void MainWindow::StartGame(std::unique_ptr<BootParameters>&& parameters)
   // If we're running, only start a new game once we've stopped the last.
   if (Core::GetState() != Core::State::Uninitialized)
   {
-    //Narrysmod - Replace RequestStop with plain old Stop
+    //RTC_Hijack - Replace RequestStop with plain old Stop
     ForceStop();
     /*
     if(!RequestStop())
