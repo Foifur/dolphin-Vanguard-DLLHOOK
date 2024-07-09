@@ -67,7 +67,6 @@ IPC_HLE_PERIOD: For the Wii Remote this is the call schedule:
 #include "Core/PatchEngine.h"
 #include "Core/PowerPC/PowerPC.h"
 #include "VideoCommon/Fifo.h"
-#include "DolphinQt/NarrysMod/VanguardClient.h"
 
 namespace SystemTimers
 {

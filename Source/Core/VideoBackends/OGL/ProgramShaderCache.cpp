@@ -32,7 +32,6 @@
 #include "VideoCommon/Statistics.h"
 #include "VideoCommon/VertexLoaderManager.h"
 #include "VideoCommon/VertexShaderManager.h"
-#include "DolphinQt/NarrysMod/ThreadLocalHelper.h"
 #include "VideoCommon/VideoBackendBase.h"
 #include "VideoCommon/VideoConfig.h"
 
@@ -53,9 +52,7 @@ std::mutex ProgramShaderCache::s_pipeline_program_lock;
 static std::string s_glsl_header;
 static std::atomic<u64> s_shader_counter{0};
 
-//Narrysmod - Replace thread_local with threadlocal helper
-//static thread_local bool s_is_shared_context = false;
-static ThreadLocal<bool> s_is_shared_context(false);
+static thread_local bool s_is_shared_context = false;
 
 
 
@@ -574,7 +571,7 @@ PipelineProgram* ProgramShaderCache::GetPipelineProgram(const GLVertexFormat* ve
     // We temporarily change the vertex array to the pipeline's vertex format.
     // This can prevent the NVIDIA OpenGL driver from recompiling on first use.
     GLuint vao = vertex_format ? vertex_format->VAO : s_attributeless_VAO;
-    if (s_is_shared_context.GetValue() || vao != s_last_VAO)
+    if (s_is_shared_context || vao != s_last_VAO)
       glBindVertexArray(vao);
 
     // Attach shaders.
@@ -596,7 +593,7 @@ PipelineProgram* ProgramShaderCache::GetPipelineProgram(const GLVertexFormat* ve
     glLinkProgram(prog->shader.glprogid);
 
     // Restore VAO binding after linking.
-    if (!s_is_shared_context.GetValue() && vao != s_last_VAO)
+    if (!s_is_shared_context && vao != s_last_VAO)
       glBindVertexArray(s_last_VAO);
 
     if (!CheckProgramLinkResult(prog->shader.glprogid,
@@ -626,7 +623,7 @@ PipelineProgram* ProgramShaderCache::GetPipelineProgram(const GLVertexFormat* ve
 
   // If this is a shared context, ensure we sync before we return the program to
   // the main thread. If we don't do this, some driver can lock up (e.g. AMD).
-  if (s_is_shared_context.GetValue())
+  if (s_is_shared_context)
     glFinish();
 
   auto ip = s_pipeline_programs.emplace(key, std::move(prog));
@@ -867,7 +864,7 @@ bool SharedContextAsyncShaderCompiler::WorkerThreadInitWorkerThread(void* param)
   if (!context->MakeCurrent())
     return false;
 
-  s_is_shared_context.SetValue(true);
+  s_is_shared_context = true;
 
   // Make the state match the main context to have a better chance of avoiding recompiles.
   if (!context->IsGLES())

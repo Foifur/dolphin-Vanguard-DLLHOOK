@@ -21,8 +21,6 @@
 #include "Core/Boot/Boot.h"
 #include "Core/ConfigManager.h"
 #include "Core/Core.h"
-#include "Core/HW/Memmap.h"                              //RTC_Hijack
-#include "Core/PowerPC/Jit64Common/Jit64PowerPCState.h"  //RTC_Hijack
 
 #include "DolphinQt/Host.h"
 #include "DolphinQt/MainWindow.h"
@@ -35,18 +33,6 @@
 
 #include "UICommon/CommandLineParse.h"
 #include "UICommon/UICommon.h"
-
-// RTC_Hijack: wrapped peek/poke byte functions for DLLHOOK
-unsigned char ManagedWrapper_peekbyte(long long addr)
-{
-  return Memory::Read_U8(static_cast<u32>(addr));
-}
-
-void ManagedWrapper_pokebyte(long long addr, unsigned char val)
-{
-  Memory::Write_U8(val, static_cast<u32>(addr));
-  PowerPC::ppcState.iCache.Invalidate(addr);
-}
 
 static bool QtMsgAlertHandler(const char* caption, const char* text, bool yes_no, Common::MsgType style)
 {
@@ -112,6 +98,7 @@ static bool QtMsgAlertHandler(const char* caption, const char* text, bool yes_no
 // /SubSystem:Windows
 int main(int argc, char* argv[])
 {
+
 #ifdef _WIN32
   const bool console_attached = AttachConsole(ATTACH_PARENT_PROCESS) != FALSE;
   HANDLE stdout_handle = ::GetStdHandle(STD_OUTPUT_HANDLE);
@@ -242,7 +229,11 @@ int main(int argc, char* argv[])
     {
       DWORD error = GetLastError();
     }
+
     StartVanguard();
+
+
+
     win.Show();
 
 

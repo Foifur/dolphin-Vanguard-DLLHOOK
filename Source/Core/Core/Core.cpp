@@ -65,6 +65,9 @@
 #include "Core/State.h"
 #include "Core/WiiRoot.h"
 
+#include "DolphinQT/VanguardHelpers.h" //RTC_Hijack
+
+
 #ifdef USE_GDBSTUB
 #include "Core/PowerPC/GDBStub.h"
 #endif
@@ -83,7 +86,6 @@
 #include "VideoCommon/RenderBase.h"
 #include "VideoCommon/VideoBackendBase.h"
 #include "VideoCommon/VideoConfig.h"
-#include "DolphinQt/NarrysMod/ThreadLocalHelper.h"
 
 namespace Core
 {
@@ -122,7 +124,12 @@ static std::queue<HostJob> s_host_jobs_queue;
 static Common::Event s_cpu_thread_job_finished;
 
 //Narrysmod - Swap Thread_Local to ThreadLocal helper
-static ThreadLocal<bool> tls_is_cpu_thread(false);
+//static ThreadLocal<bool> tls_is_cpu_thread(false);
+
+static thread_local bool tls_is_cpu_thread = false;
+static thread_local bool tls_is_gpu_thread = false;
+static thread_local bool tls_is_host_thread = false;
+
 
 static void EmuThread(std::unique_ptr<BootParameters> boot, WindowSystemInfo wsi);
 
@@ -189,7 +196,8 @@ bool IsRunningInCurrentThread()
 
 bool IsCPUThread()
 {
-  return tls_is_cpu_thread.GetValue();
+  //return tls_is_cpu_thread.GetValue();
+  return tls_is_cpu_thread;
 }
 
 bool IsGPUThread()
@@ -296,12 +304,14 @@ void Stop()  // - Hammertime!
 
 void DeclareAsCPUThread()
 {
-  tls_is_cpu_thread.SetValue(true);
+  //tls_is_cpu_thread.SetValue(true);
+  tls_is_cpu_thread = true;
 }
 
 void UndeclareAsCPUThread()
 {
-  tls_is_cpu_thread.SetValue(false);
+  //tls_is_cpu_thread.SetValue(false);
+  tls_is_cpu_thread = false;
 }
 
 // For the CPU Thread only.
@@ -344,20 +354,9 @@ static void CpuThread(const std::optional<std::string>& savestate_path, bool del
     if (delete_savestate)
       File::Delete(*savestate_path);
   }
+  // RTC_Hijack: call Vanguard function
+  CallImportedFunction("LOADGAMEDONE", SConfig::GetInstance().GetTitleDescription());
 
-  // RTC_Hijack: include the hook dll as an import
-  HINSTANCE vanguard = LoadLibraryA("DolphinVanguard-Hook.dll");
-  if (!vanguard)
-  {
-    DWORD error = GetLastError();
-  }
-  typedef void (*LOADGAMEDONE)();
-  LOADGAMEDONE LoadGameDone = (LOADGAMEDONE)GetProcAddress(vanguard, "LOADGAMEDONE");
-  if (!LoadGameDone)
-  {
-    DWORD error = GetLastError();
-  }
-  LoadGameDone();
 
   s_is_started = true;
   CPUSetInitialExecutionState();
@@ -386,10 +385,8 @@ static void CpuThread(const std::optional<std::string>& savestate_path, bool del
   s_memory_watcher.reset();
 #endif
 
-  // RTC_Hijack: include the hook dll as an import
-  typedef void (*GAMECLOSED)();
-  GAMECLOSED CloseGame = (GAMECLOSED)GetProcAddress(vanguard, "GAMECLOSED");
-  CloseGame();
+  // RTC_Hijack: call Vanguard function
+  CallImportedFunction("GAMECLOSED", nullptr);
 
   s_is_started = false;
 
@@ -460,19 +457,8 @@ static void EmuThread(std::unique_ptr<BootParameters> boot, WindowSystemInfo wsi
   if (std::holds_alternative<BootParameters::Disc>(boot->parameters))
     romPath = std::get<BootParameters::Disc>(boot->parameters).path;
 
-  // RTC_Hijack: include the hook dll as an import
-  HINSTANCE vanguard = LoadLibraryA("DolphinVanguard-Hook.dll");
-  if (!vanguard)
-  {
-    DWORD error = GetLastError();
-  }
-  typedef void (*LOADGAMESTART)(std::string);
-  LOADGAMESTART LoadGameStart = (LOADGAMESTART)GetProcAddress(vanguard, "LOADGAMESTART");
-  if (!LoadGameStart)
-  {
-    DWORD error = GetLastError();
-  }
-  LoadGameStart(romPath);
+  // RTC_Hijack: call Vanguard function
+  CallImportedFunction("LOADGAMESTART", romPath);
 
   // For a time this acts as the CPU thread...
   DeclareAsCPUThread();
