@@ -940,7 +940,7 @@ void MainWindow::StartGame(const QString& path, ScanForSecondDisc scan,
                            const std::optional<std::string>& savestate_path)
 {
   // RTC_Hijack: call Vanguard function
-  CallImportedFunction("GAMETOLOAD", path.toStdString());
+  CallImportedFunction<void>((char*)"GAMETOLOAD", path.toStdString());
   StartGame(path.toStdString(), scan, savestate_path);
 }
 
@@ -957,13 +957,13 @@ void MainWindow::StartGame(const std::string& path, ScanForSecondDisc scan,
     }
   }
   // RTC_Hijack: call Vanguard function
-  CallImportedFunction("GAMETOLOAD", path);
+  CallImportedFunction<void>((char*)"GAMETOLOAD", path);
   StartGame(BootParameters::GenerateFromFile(path, savestate_path));
 }
 void MainWindow::StartGame(const std::string& path)
 {
   // RTC_Hijack: call Vanguard function
-  CallImportedFunction("GAMETOLOAD", path);
+  CallImportedFunction<void>((char*)"GAMETOLOAD", path);
   StartGame(BootParameters::GenerateFromFile(path));
 }
 
@@ -971,7 +971,7 @@ void MainWindow::StartGame(const std::vector<std::string>& paths,
                            const std::optional<std::string>& savestate_path)
 {
   // RTC_Hijack: call Vanguard function
-  CallImportedFunction("GAMETOLOAD", paths[0]);
+  CallImportedFunction<void>((char*)"GAMETOLOAD", paths[0]);
   StartGame(BootParameters::GenerateFromFile(paths, savestate_path));
 }
 

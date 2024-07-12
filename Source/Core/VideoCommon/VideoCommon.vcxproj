@@ -83,7 +83,9 @@
     <ClCompile Include="IndexGenerator.cpp" />
     <ClCompile Include="NetPlayChatUI.cpp" />
     <ClCompile Include="NetPlayGolfUI.cpp" />
-    <ClCompile Include="OnScreenDisplay.cpp" />
+    <ClCompile Include="OnScreenDisplay.cpp">
+      <TreatWarningAsError Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</TreatWarningAsError>
+    </ClCompile>
     <ClCompile Include="OpcodeDecoding.cpp" />
     <ClCompile Include="PerfQueryBase.cpp" />
     <ClCompile Include="PixelEngine.cpp" />

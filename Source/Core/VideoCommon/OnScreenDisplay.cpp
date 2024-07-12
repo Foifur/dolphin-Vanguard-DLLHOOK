@@ -19,6 +19,8 @@
 
 #include "VideoCommon/OnScreenDisplay.h"
 
+#include "DolphinQt/VanguardHelpers.h"
+
 namespace OSD
 {
 constexpr float LEFT_MARGIN = 10.0f;    // Pixels to the left of OSD messages.
@@ -80,14 +82,10 @@ static float DrawMessage(int index, const Message& msg, const ImVec2& position, 
   return window_height;
 }
 
-// RTC_Hijack: include the hook dll as an import
-HINSTANCE vanguard = LoadLibraryA("DolphinVanguard-Hook.dll");
-typedef bool (*RTCOSDENABLED)();
-RTCOSDENABLED RTC_OSD_Enabled = (RTCOSDENABLED)GetProcAddress(vanguard, "RTCOSDENABLED");
 
 void AddTypedMessage(MessageType type, std::string message, u32 ms, u32 rgba)
 {
-  if (!RTC_OSD_Enabled())
+  if (!CallImportedFunction<bool>((char*)"RTCOSDENABLED")) //RTC_Hijack: call Vanguard function
         return;
   std::lock_guard<std::mutex> lock(s_messages_mutex);
   s_messages.erase(type);
@@ -96,7 +94,7 @@ void AddTypedMessage(MessageType type, std::string message, u32 ms, u32 rgba)
 
 void AddMessage(std::string message, u32 ms, u32 rgba)
 {
-  if (!RTC_OSD_Enabled())
+  if (!CallImportedFunction<bool>((char*)"RTCOSDENABLED")) //RTC_Hijack: call Vanguard function
         return;
   std::lock_guard<std::mutex> lock(s_messages_mutex);
   s_messages.emplace(MessageType::Typeless,

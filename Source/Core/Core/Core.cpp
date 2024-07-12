@@ -355,7 +355,7 @@ static void CpuThread(const std::optional<std::string>& savestate_path, bool del
       File::Delete(*savestate_path);
   }
   // RTC_Hijack: call Vanguard function
-  CallImportedFunction("LOADGAMEDONE", SConfig::GetInstance().GetTitleDescription());
+  CallImportedFunction<void>((char*)"LOADGAMEDONE", SConfig::GetInstance().GetTitleDescription());
 
 
   s_is_started = true;
@@ -386,7 +386,7 @@ static void CpuThread(const std::optional<std::string>& savestate_path, bool del
 #endif
 
   // RTC_Hijack: call Vanguard function
-  CallImportedFunction("GAMECLOSED", nullptr);
+  CallImportedFunction<void>((char*)"GAMECLOSED");
 
   s_is_started = false;
 
@@ -458,7 +458,7 @@ static void EmuThread(std::unique_ptr<BootParameters> boot, WindowSystemInfo wsi
     romPath = std::get<BootParameters::Disc>(boot->parameters).path;
 
   // RTC_Hijack: call Vanguard function
-  CallImportedFunction("LOADGAMESTART", romPath);
+  CallImportedFunction<void>((char*)"LOADGAMESTART", romPath);
 
   // For a time this acts as the CPU thread...
   DeclareAsCPUThread();
@@ -996,10 +996,7 @@ void Shutdown()
 {
   //Let the RTC shut down anything it needs to shut down gracefully
   //   RTC_Hijack: include the hook dll as an import
-  HINSTANCE vanguard = LoadLibraryA("DolphinVanguard-Hook.dll");
-  typedef void (*EMULATORCLOSING)();
-  EMULATORCLOSING EmulatorClosing = (EMULATORCLOSING)GetProcAddress(vanguard, "EMULATORCLOSING");
-  EmulatorClosing();
+  CallImportedFunction<void>((char*)"EMULATORCLOSING");
 
   // During shutdown DXGI expects us to handle some messages on the UI thread.
   // Therefore we can't immediately block and wait for the emu thread to shut

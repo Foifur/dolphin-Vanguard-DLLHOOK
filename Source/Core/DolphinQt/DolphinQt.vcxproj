@@ -48,6 +48,9 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros">
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <EmbedManifest>true</EmbedManifest>
+  </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
       <!-- 5054  operator '+': deprecated between enumerations of different types (in Qt headers) -->
@@ -579,9 +582,7 @@
     <DataSysFiles Include="$(DolphinRootDir)Data\**\Sys\**\*.*" />
     <DataTxtFiles Include="$(DolphinRootDir)Data\license.txt" />
     <Executables Include="$(TargetDir)\*.exe" />
-    <Dlls Include="$(RTCDir)\*.dll" />
-    <Pdbs Include="$(RTCDir)\*.pdb" />
-    <AllInputFiles Include="@(DataSysFiles);@(DataTxtFiles);@(Executables);@(Dlls);@(Pdbs)" />
+    <AllInputFiles Include="@(DataSysFiles);@(DataTxtFiles);@(Executables)" />
   </ItemGroup>
   <Target Name="AfterBuild" Inputs="@(AllInputFiles)" Outputs="@(AllInputFiles -> '$(BinaryOutputDir)%(RecursiveDir)%(Filename)%(Extension)')">
     <Message Text="Copying Data directory..." Importance="High" />
@@ -589,9 +590,5 @@
     <Copy SourceFiles="@(DataTxtFiles)" DestinationFolder="$(BinaryOutputDir)" Condition="!Exists('$(BinaryOutputDir)%(Filename)%(DataTxtFiles.Extension)') OR $([System.DateTime]::Parse('%(ModifiedTime)').Ticks) &gt; $([System.IO.File]::GetLastWriteTime('$(BinaryOutputDir)%(RecursiveDir)%(Filename)%(DataTxtFiles.Extension)').Ticks)" />
     <Message Text="Copy: @(Executables) -&gt; $(BinaryOutputDir)" Importance="High" />
     <Copy SourceFiles="@(Executables)" DestinationFolder="$(BinaryOutputDir)" />
-    <Message Text="Copy: @(Dlls) -&gt; $(BinaryOutputDir)" Importance="High" />
-    <Copy SourceFiles="@(Dlls)" DestinationFolder="$(BinaryOutputDir)" />
-    <Message Text="Copy: @(Pdbs) -&gt; $(BinaryOutputDir)" Importance="High" />
-    <Copy SourceFiles="@(Pdbs)" DestinationFolder="$(BinaryOutputDir)" />
   </Target>
 </Project>

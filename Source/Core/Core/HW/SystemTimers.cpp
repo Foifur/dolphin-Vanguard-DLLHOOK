@@ -67,6 +67,7 @@ IPC_HLE_PERIOD: For the Wii Remote this is the call schedule:
 #include "Core/PatchEngine.h"
 #include "Core/PowerPC/PowerPC.h"
 #include "VideoCommon/Fifo.h"
+#include "DolphinQt/VanguardHelpers.h"
 
 
 namespace SystemTimers
@@ -156,12 +157,7 @@ void PatchEngineCallback(u64 userdata, s64 cycles_late)
   if (PatchEngine::ApplyFramePatches())
   {
     // RTC_Hijack: call Vanguard function
-    // since this function is getting called frequently we can't load and free the dll constantly,
-    // so this function cannot use the helper function.
-    HINSTANCE vanguard = LoadLibraryA("DolphinVanguard-Hook.dll");
-    typedef void (*CORESTEP)();
-    CORESTEP CoreStep = (CORESTEP)GetProcAddress(vanguard, "CORESTEP");
-    CoreStep();
+    CallImportedFunction<void>((char*)"CORESTEP");
     next_schedule = vi_interval - cycles_pruned;
     cycles_pruned = 0;
   }
