@@ -15,6 +15,7 @@ extern "C" __declspec(dllexport) void Vanguard_savesavestate(BSTR filename, bool
 
 extern "C" __declspec(dllexport) void Vanguard_loadsavestate(BSTR filename);
 
+extern "C" __declspec(dllexport) void Vanguard_loadROM(BSTR filename);
 
 inline HINSTANCE vanguard = LoadLibraryA("../RTCV/VanguardHook.dll");
 

@@ -499,6 +499,7 @@
     <ClInclude Include="ResourcePackManager.h" />
     <ClInclude Include="Resources.h" />
     <ClInclude Include="Translation.h" />
+    <ClInclude Include="VanguardClientInitializer.h" />
     <ClInclude Include="VanguardHelpers.h" />
     <ClInclude Include="WiiUpdate.h" />
   </ItemGroup>

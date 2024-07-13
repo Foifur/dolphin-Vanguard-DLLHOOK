@@ -65,7 +65,7 @@
 #include "Core/State.h"
 #include "Core/WiiRoot.h"
 
-#include "DolphinQT/VanguardHelpers.h" //RTC_Hijack
+#include "DolphinQT/VanguardHelpers.h" // RTC_Hijack
 
 
 #ifdef USE_GDBSTUB
@@ -357,7 +357,6 @@ static void CpuThread(const std::optional<std::string>& savestate_path, bool del
   // RTC_Hijack: call Vanguard function
   CallImportedFunction<void>((char*)"LOADGAMEDONE", SConfig::GetInstance().GetTitleDescription());
 
-
   s_is_started = true;
   CPUSetInitialExecutionState();
 
@@ -452,7 +451,7 @@ static void EmuThread(std::unique_ptr<BootParameters> boot, WindowSystemInfo wsi
 
   
 
-  // NARRYSMOD_HIJACK - Snag the boot path
+  // RTC_HIJACK: Snag the boot path
   std::string romPath = "";
   if (std::holds_alternative<BootParameters::Disc>(boot->parameters))
     romPath = std::get<BootParameters::Disc>(boot->parameters).path;
@@ -994,8 +993,8 @@ void UpdateTitle()
 
 void Shutdown()
 {
-  //Let the RTC shut down anything it needs to shut down gracefully
-  //   RTC_Hijack: include the hook dll as an import
+  // Let the RTC shut down anything it needs to shut down gracefully
+  // RTC_Hijack: call Vanguard function
   CallImportedFunction<void>((char*)"EMULATORCLOSING");
 
   // During shutdown DXGI expects us to handle some messages on the UI thread.

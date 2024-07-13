@@ -85,7 +85,7 @@ static float DrawMessage(int index, const Message& msg, const ImVec2& position, 
 
 void AddTypedMessage(MessageType type, std::string message, u32 ms, u32 rgba)
 {
-  if (!CallImportedFunction<bool>((char*)"RTCOSDENABLED")) //RTC_Hijack: call Vanguard function
+  if (!CallImportedFunction<bool>((char*)"RTCOSDENABLED")) // RTC_Hijack: call Vanguard function
         return;
   std::lock_guard<std::mutex> lock(s_messages_mutex);
   s_messages.erase(type);
@@ -94,7 +94,7 @@ void AddTypedMessage(MessageType type, std::string message, u32 ms, u32 rgba)
 
 void AddMessage(std::string message, u32 ms, u32 rgba)
 {
-  if (!CallImportedFunction<bool>((char*)"RTCOSDENABLED")) //RTC_Hijack: call Vanguard function
+  if (!CallImportedFunction<bool>((char*)"RTCOSDENABLED")) // RTC_Hijack: call Vanguard function
         return;
   std::lock_guard<std::mutex> lock(s_messages_mutex);
   s_messages.emplace(MessageType::Typeless,

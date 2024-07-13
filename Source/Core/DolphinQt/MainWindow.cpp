@@ -101,7 +101,8 @@
 #include "DolphinQt/TAS/WiiTASInputWindow.h"
 #include "DolphinQt/ToolBar.h"
 #include "DolphinQt/WiiUpdate.h"
-#include "DolphinQt/VanguardHelpers.h" //RTC_Hijack
+#include "DolphinQt/VanguardHelpers.h" // RTC_Hijack
+#include "DolphinQt/VanguardClientInitializer.h" // RTC_Hijack
 
 #include "InputCommon/ControllerInterface/ControllerInterface.h"
 
@@ -214,6 +215,7 @@ MainWindow::MainWindow(std::unique_ptr<BootParameters> boot_parameters,
   ConnectStack();
   ConnectMenuBar();
   ConnectHotkeys();
+  VanguardClientInitializer::win = this;
 
   InitCoreCallbacks();
 
@@ -980,7 +982,7 @@ void MainWindow::StartGame(std::unique_ptr<BootParameters>&& parameters)
   // If we're running, only start a new game once we've stopped the last.
   if (Core::GetState() != Core::State::Uninitialized)
   {
-    //RTC_Hijack - Replace RequestStop with plain old Stop
+    // RTC_Hijack - Replace RequestStop with plain old Stop
     ForceStop();
     /*
     if(!RequestStop())

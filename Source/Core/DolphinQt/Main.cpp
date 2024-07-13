@@ -217,7 +217,7 @@ int main(int argc, char* argv[])
     MainWindow win{std::move(boot), static_cast<const char*>(options.get("movie"))};
     if (options.is_set("debugger"))
       Settings::Instance().SetDebugModeEnabled(true);
-    // RTC_Hijack: call imported Vanguard function
+    // RTC_Hijack: call Vanguard function
     std::string str = argv[0];
     std::string emuDir = str.substr(0,str.find_last_of("/\\"));
     CallImportedFunction<void>((char*)"InitVanguard", emuDir);

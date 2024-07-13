@@ -4,8 +4,7 @@
 #include "Core/State.h"
 #include <debugapi.h>
 #include <VanguardHelpers.h>
-#include <filesystem>
-#include <stdlib.h>
+#include <VanguardClientInitializer.h>
 
 
 unsigned char Vanguard_peekbyte(long long addr)
@@ -35,6 +34,29 @@ void Vanguard_loadsavestate(BSTR filename)
   std::string filename_converted = BSTRToString(filename);
   State::LoadAs(filename_converted);
 }
+
+static volatile bool loading = false;
+void Vanguard_loadROM(BSTR filename)
+{
+  loading = true;
+
+  std::string converted_filename = BSTRToString(filename);
+
+  SetState(Core::State::Paused);
+  VanguardClientInitializer::win->StartGame(converted_filename);
+  
+  // We have to do it this way to prevent deadlock due to synced calls. It sucks but it's required
+  // at the moment
+  while (loading)
+  {
+    if (Core::IsRunningAndStarted)
+      loading = false;
+  }
+
+  Sleep(100);  // Give the emu thread a chance to recover
+  
+}
+
 
 //converts a BSTR received from the Vanguard client to std::string
 std::string BSTRToString(BSTR string)
