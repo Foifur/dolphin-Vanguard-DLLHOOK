@@ -17,8 +17,15 @@ extern "C" __declspec(dllexport) void Vanguard_loadsavestate(BSTR filename);
 
 extern "C" __declspec(dllexport) void Vanguard_loadROM(BSTR filename);
 
-inline HINSTANCE vanguard = LoadLibraryA("../RTCV/VanguardHook.dll");
+extern "C" __declspec(dllexport) void Vanguard_finishLoading();
 
+class VanguardClient
+{
+public:
+  static bool loading;
+};
+
+inline HINSTANCE vanguard = LoadLibraryA("../RTCV/VanguardHook.dll");
 /* CallImportedFunction -- calls a function that has been exported from the Vanguard */
 /*                        client to be accessed by the emulator                      */
 /*                                                                                   */
@@ -55,6 +62,9 @@ T CallImportedFunction(char* function_name, std::string string = "")
       DWORD error = GetLastError();
     else
     {
+      // make sure to free the BSTR from memory once we're done with it
+      SysFreeString(converted_string);
+      // VanguardClient::loading = false;
       return function(converted_string);
     }
   }
@@ -66,10 +76,13 @@ T CallImportedFunction(char* function_name, std::string string = "")
     if (!function)
       DWORD error = GetLastError();
     else
+    {
+      // make sure to free the BSTR from memory once we're done with it
+      SysFreeString(converted_string);
+      // VanguardClient::loading = false;
       return function();
+    }
   }
-  // make sure to free the BSTR from memory once we're done with it
-  SysFreeString(converted_string);
 }
 
 std::string BSTRToString(BSTR string);

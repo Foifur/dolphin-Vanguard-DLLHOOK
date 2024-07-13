@@ -35,28 +35,37 @@ void Vanguard_loadsavestate(BSTR filename)
   State::LoadAs(filename_converted);
 }
 
-static volatile bool loading = false;
+bool VanguardClient::loading = false;
 void Vanguard_loadROM(BSTR filename)
 {
-  loading = true;
+  VanguardClient::loading = true;
 
   std::string converted_filename = BSTRToString(filename);
 
   SetState(Core::State::Paused);
   VanguardClientInitializer::win->StartGame(converted_filename);
-  
+
+  MSG msg;
   // We have to do it this way to prevent deadlock due to synced calls. It sucks but it's required
   // at the moment
-  while (loading)
+  while (VanguardClient::loading)
   {
-    if (Core::IsRunningAndStarted)
-      loading = false;
+    Sleep(20);
+    //these lines of code perform the equivalent of the Application.DoEvents method
+    ::PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE);
+    ::GetMessage(&msg, NULL, 0, 0);
+    ::TranslateMessage(&msg);
+    ::DispatchMessage(&msg);
   }
 
   Sleep(100);  // Give the emu thread a chance to recover
   
 }
 
+void Vanguard_finishLoading()
+{
+  VanguardClient::loading = false;
+}
 
 //converts a BSTR received from the Vanguard client to std::string
 std::string BSTRToString(BSTR string)
@@ -66,3 +75,4 @@ std::string BSTRToString(BSTR string)
   std::string converted_string = converter.to_bytes(ws);
   return converted_string;
 }
+
