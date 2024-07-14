@@ -241,6 +241,9 @@ bool Init(std::unique_ptr<BootParameters> boot, const WindowSystemInfo& wsi)
 
   INFO_LOG(BOOT, "Starting core = %s mode", SConfig::GetInstance().bWii ? "Wii" : "GameCube");
   INFO_LOG(BOOT, "CPU Thread separate = %s", SConfig::GetInstance().bCPUThread ? "Yes" : "No");
+
+  // RTC_Hijack: Snag the console mode
+  VanguardClient::bWii = SConfig::GetInstance().bWii;
   
   Host_UpdateMainFrame();  // Disable any menus or buttons at boot
 
@@ -354,6 +357,7 @@ static void CpuThread(const std::optional<std::string>& savestate_path, bool del
     if (delete_savestate)
       File::Delete(*savestate_path);
   }
+
   // RTC_Hijack: call Vanguard function
   CallImportedFunction<void>((char*)"LOADGAMEDONE", SConfig::GetInstance().GetTitleDescription());
 

@@ -1,5 +1,7 @@
 #pragma once
 
+#define EXPORT extern "C" __declspec(dllexport)
+
 #include "Core/HW/Memmap.h"
 #include "Core/PowerPC/Jit64Common/Jit64PowerPCState.h"
 #include "Core/State.h"
@@ -7,22 +9,25 @@
 #include <locale>
 #include <codecvt>
 
-extern "C" __declspec(dllexport) unsigned char Vanguard_peekbyte(long long addr);
+EXPORT unsigned char Vanguard_peekbyte(long long addr);
 
-extern "C" __declspec(dllexport) void Vanguard_pokebyte(long long addr, unsigned char val);
+EXPORT void Vanguard_pokebyte(long long addr, unsigned char val);
 
-extern "C" __declspec(dllexport) void Vanguard_savesavestate(BSTR filename, bool wait);
+EXPORT void Vanguard_savesavestate(BSTR filename, bool wait);
 
-extern "C" __declspec(dllexport) void Vanguard_loadsavestate(BSTR filename);
+EXPORT void Vanguard_loadsavestate(BSTR filename);
 
-extern "C" __declspec(dllexport) void Vanguard_loadROM(BSTR filename);
+EXPORT void Vanguard_loadROM(BSTR filename);
 
-extern "C" __declspec(dllexport) void Vanguard_finishLoading();
+EXPORT void Vanguard_finishLoading();
+
+EXPORT bool Vanguard_isWii();
 
 class VanguardClient
 {
 public:
   static bool loading;
+  static bool bWii;
 };
 
 inline HINSTANCE vanguard = LoadLibraryA("../RTCV/VanguardHook.dll");

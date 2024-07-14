@@ -2,6 +2,7 @@
 #include "Core/HW/Memmap.h"
 #include "Core/PowerPC/Jit64Common/Jit64PowerPCState.h"
 #include "Core/State.h"
+#include "Core/ConfigManager.h"
 #include <debugapi.h>
 #include <VanguardHelpers.h>
 #include <VanguardClientInitializer.h>
@@ -76,3 +77,8 @@ std::string BSTRToString(BSTR string)
   return converted_string;
 }
 
+bool VanguardClient::bWii = false;
+bool Vanguard_isWii()
+{
+  return VanguardClient::bWii;
+}
