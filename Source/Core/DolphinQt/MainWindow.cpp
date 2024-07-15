@@ -869,10 +869,13 @@ bool MainWindow::RequestStop()
   return true;
 }
 
+
 void MainWindow::ForceStop()
 {
   Core::Stop();
 }
+
+// RTC_Hijack: Custom force stop function
 void MainWindow::ForceStopVanguard()
 {
   if (!Core::IsRunning())

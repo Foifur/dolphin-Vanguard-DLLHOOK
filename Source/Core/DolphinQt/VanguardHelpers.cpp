@@ -3,20 +3,31 @@
 #include "Core/PowerPC/Jit64Common/Jit64PowerPCState.h"
 #include "Core/State.h"
 #include "Core/ConfigManager.h"
-#include <debugapi.h>
+#include "Core/HW/dsp.h"
 #include <VanguardHelpers.h>
 #include <VanguardClientInitializer.h>
 
 
-unsigned char Vanguard_peekbyte(long long addr)
+
+unsigned char Vanguard_peekbyte(long long addr, int selection)
 {
-  return Memory::Read_U8(static_cast<u32>(addr));
+  if (selection == 0)
+    return Memory::Read_U8(static_cast<u32>(addr));
+  else
+    return DSP::ReadARAM(static_cast<u32>(addr));
 }
 
-void Vanguard_pokebyte(long long addr, unsigned char val)
+void Vanguard_pokebyte(long long addr, unsigned char val, int selection)
 {
-  Memory::Write_U8(val, static_cast<u32>(addr));
-  PowerPC::ppcState.iCache.Invalidate(addr);
+  if (selection == 0)
+  {
+    Memory::Write_U8(val, static_cast<u32>(addr));
+    PowerPC::ppcState.iCache.Invalidate(addr);
+  }
+  else
+  {
+    DSP::WriteARAM(val, static_cast<u32>(addr));
+  }
 }
 
 void Vanguard_savesavestate(BSTR filename, bool wait)
@@ -68,6 +79,16 @@ void Vanguard_finishLoading()
   VanguardClient::loading = false;
 }
 
+void Vanguard_prepShutdown()
+{
+  VanguardClientInitializer::win->m_exit_requested = true;
+}
+
+void Vanguard_forceStop()
+{
+  VanguardClientInitializer::win->MainWindow::ForceStopVanguard();
+}
+
 //converts a BSTR received from the Vanguard client to std::string
 std::string BSTRToString(BSTR string)
 {
@@ -81,4 +102,12 @@ bool VanguardClient::bWii = false;
 bool Vanguard_isWii()
 {
   return VanguardClient::bWii;
+}
+
+std::string getDirectory()
+{
+  char buffer[MAX_PATH] = {0};
+  GetModuleFileNameA(NULL, buffer, MAX_PATH);
+  std::string::size_type pos = std::string(buffer).find_last_of("\\/");
+  return std::string(buffer).substr(0, pos);
 }

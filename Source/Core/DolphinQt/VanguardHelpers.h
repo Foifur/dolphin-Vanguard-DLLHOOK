@@ -1,7 +1,5 @@
 #pragma once
 
-#define EXPORT extern "C" __declspec(dllexport)
-
 #include "Core/HW/Memmap.h"
 #include "Core/PowerPC/Jit64Common/Jit64PowerPCState.h"
 #include "Core/State.h"
@@ -9,9 +7,11 @@
 #include <locale>
 #include <codecvt>
 
-EXPORT unsigned char Vanguard_peekbyte(long long addr);
+#define EXPORT extern "C" __declspec(dllexport)
 
-EXPORT void Vanguard_pokebyte(long long addr, unsigned char val);
+EXPORT unsigned char Vanguard_peekbyte(long long addr, int selection);
+
+EXPORT void Vanguard_pokebyte(long long addr, unsigned char val, int selection);
 
 EXPORT void Vanguard_savesavestate(BSTR filename, bool wait);
 
@@ -20,6 +20,10 @@ EXPORT void Vanguard_loadsavestate(BSTR filename);
 EXPORT void Vanguard_loadROM(BSTR filename);
 
 EXPORT void Vanguard_finishLoading();
+
+EXPORT void Vanguard_prepShutdown();
+
+EXPORT void Vanguard_forceStop();
 
 EXPORT bool Vanguard_isWii();
 
@@ -91,3 +95,5 @@ T CallImportedFunction(char* function_name, std::string string = "")
 }
 
 std::string BSTRToString(BSTR string);
+
+std::string getDirectory();

@@ -218,8 +218,9 @@ int main(int argc, char* argv[])
     if (options.is_set("debugger"))
       Settings::Instance().SetDebugModeEnabled(true);
     // RTC_Hijack: call Vanguard function
-    std::string str = argv[0];
-    std::string emuDir = str.substr(0,str.find_last_of("/\\"));
+    std::string emuDir = getDirectory();
+
+
     CallImportedFunction<void>((char*)"InitVanguard", emuDir);
 
     win.Show();
